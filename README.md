@@ -21,10 +21,12 @@ Features included
 
 Latest Changes
 -----------------
-* Fix issue #18 - Consecutive activity opening (pull request from @michalbrz) :2.0.3
-* Fix issue #17 - FlatButton padding applied (solution from @jstefanowski) :2.0.4
-* Fix issue #14, 15, 19, 26 - Attribute name clash (contribution from @aimanbaharum) :2.1.0
+* Add ease and ripple effects to buttons : 3.0.0
+* Fix issue #30 - Merge pull requests #34 (@sherwinrobles), #32 (@aliok), #28 (@weiwelcome0) :2.2.0
 * Fix issue #22 - NPE-while-creating-views-dynamically :2.1.1
+* Fix issue #14, 15, 19, 26 - Attribute name clash (contribution from @aimanbaharum) :2.1.0
+* Fix issue #17 - FlatButton padding applied (solution from @jstefanowski) :2.0.4
+* Fix issue #18 - Consecutive activity opening (pull request from @michalbrz) :2.0.3
 
 Widgets
 -----------
@@ -41,7 +43,7 @@ Including into your project
 Add the following dependency to your `build.gradle`.
 
     dependencies {
-        compile 'com.github.eluleci:flatui:2.1.1'
+        compile 'com.github.eluleci:flatui:3.0.0'
     }
 
 
@@ -186,6 +188,7 @@ xmlns:flatui="http://schemas.android.com/apk/res-auto"
 <!-- FlatButton -->
 <com.cengalabs.flatui.views.FlatButton
 	...
+    flatui:fl_touchEffect="fl_ripple"
 	flatui:fl_blockButtonEffectHeight="3dp" />
 
 

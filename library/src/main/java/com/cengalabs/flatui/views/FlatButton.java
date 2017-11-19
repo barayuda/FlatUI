@@ -2,6 +2,7 @@ package com.cengalabs.flatui.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -10,11 +11,13 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.widget.Button;
 
 import com.cengalabs.flatui.Attributes;
 import com.cengalabs.flatui.FlatUI;
 import com.cengalabs.flatui.R;
+import com.cengalabs.flatui.TouchEffectAnimator;
 
 /**
  * User: eluleci
@@ -27,6 +30,8 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
 
     // default values of specific attributes
     private int bottom = 0;
+
+    private TouchEffectAnimator touchEffectAnimator;
 
     public FlatButton(Context context) {
         super(context);
@@ -41,6 +46,20 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
     public FlatButton(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs);
+    }
+
+    @Override
+    public boolean onTouchEvent(final MotionEvent event) {
+        if (attributes.hasTouchEffect() && touchEffectAnimator != null)
+            touchEffectAnimator.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
+    @Override
+    protected void onDraw(final Canvas canvas) {
+        if (attributes.hasTouchEffect() && touchEffectAnimator != null)
+            touchEffectAnimator.onDraw(canvas);
+        super.onDraw(canvas);
     }
 
     private void init(AttributeSet attrs) {
@@ -60,6 +79,7 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
             // getting common attributes
             int customTheme = a.getResourceId(R.styleable.fl_FlatButton_fl_theme, Attributes.DEFAULT_THEME);
             attributes.setThemeSilent(customTheme, getResources());
+            attributes.setTouchEffect(a.getInt(R.styleable.fl_FlatButton_fl_touchEffect, Attributes.DEFAULT_TOUCH_EFFECT));
 
             attributes.setFontFamily(a.getString(R.styleable.fl_FlatButton_fl_fontFamily));
             attributes.setFontWeight(a.getString(R.styleable.fl_FlatButton_fl_fontWeight));
@@ -73,6 +93,18 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
 
             a.recycle();
         }
+
+        if (attributes.hasTouchEffect()) {
+            boolean hasRippleEffect = attributes.getTouchEffect() == Attributes.RIPPLE_TOUCH_EFFECT;
+            touchEffectAnimator = new TouchEffectAnimator(this);
+            touchEffectAnimator.setHasRippleEffect(hasRippleEffect);
+            touchEffectAnimator.setEffectColor(attributes.getColor(1));
+            touchEffectAnimator.setClipRadius(attributes.getRadius());
+        }
+
+        /*mPaint = new Paint();
+        mPaint.setColor(attributes.getColor(1));
+        mPaint.setAlpha(mAlpha);*/
 
         // creating normal state drawable
         ShapeDrawable normalFront = new ShapeDrawable(new RoundRectShape(attributes.getOuterRadius(), null, null));
@@ -100,6 +132,7 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
         // creating disabled state drawable
         ShapeDrawable disabledFront = new ShapeDrawable(new RoundRectShape(attributes.getOuterRadius(), null, null));
         disabledFront.getPaint().setColor(attributes.getColor(3));
+        disabledFront.getPaint().setAlpha(0xA0);
 
         ShapeDrawable disabledBack = new ShapeDrawable(new RoundRectShape(attributes.getOuterRadius(), null, null));
         disabledBack.getPaint().setColor(attributes.getColor(2));
@@ -109,7 +142,8 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
 
         StateListDrawable states = new StateListDrawable();
 
-        states.addState(new int[]{android.R.attr.state_pressed, android.R.attr.state_enabled}, pressed);
+        if (!attributes.hasTouchEffect())
+            states.addState(new int[]{android.R.attr.state_pressed, android.R.attr.state_enabled}, pressed);
         states.addState(new int[]{android.R.attr.state_focused, android.R.attr.state_enabled}, pressed);
         states.addState(new int[]{android.R.attr.state_enabled}, normal);
         states.addState(new int[]{-android.R.attr.state_enabled}, disabled);
@@ -122,7 +156,7 @@ public class FlatButton extends Button implements Attributes.AttributeChangeList
         else setTextColor(Color.WHITE);
 
         // check for IDE preview render
-        if(!this.isInEditMode()) {
+        if (!this.isInEditMode()) {
             Typeface typeface = FlatUI.getFont(getContext(), attributes);
             if (typeface != null) setTypeface(typeface);
         }
